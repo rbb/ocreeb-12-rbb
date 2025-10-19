@@ -16,7 +16,7 @@ keyboard = KMKKeyboard()
 encoders = EncoderHandler()
 
 # MODULES
-rapid_fire_module = RapidFire() 
+rapid_fire_module = RapidFire()
 macros_module = Macros()
 
 # ADDED modules to modules list
@@ -84,21 +84,23 @@ HUE_DN = KC.RF(KC.RGB_HUD)
 keyboard.keymap = [
     # Layer 0
     [
-        TERMINAL, FORCE_QUIT, KC.MEDIA_PLAY_PAUSE, LOCK, 
+        TERMINAL, FORCE_QUIT, KC.MEDIA_PLAY_PAUSE, LOCK,
         HUE_UP,   SPEED_DN,   KC.AUDIO_MUTE, SPEED_UP,
         HUE_DN,   KC.LEFT,    KC.SPACE,      KC.RIGHT,
     ]
 ]
 
-ENC1_MAP = (KC.AUDIO_VOL_DOWN,   # CW = vol down
-            KC.AUDIO_VOL_UP,     # CCW = vol up
-            KC.AUDIO_MUTE,       # push = mute toggle
-            )
-ENC2_MAP = (KC.RGB_VAD,  # CW=RGB Bright down
-            KC.RGB_VAI,  # CCW= RGB Bright up
-            KC.RGB_TOG   # Push= RGB on/off
-            )
-encoders.map = [(ENC1_MAP, ENC2_MAP)]
+ENC_MAP_VOL = (KC.AUDIO_VOL_DOWN,   # CW = vol down
+           KC.AUDIO_VOL_UP,     # CCW = vol up
+           KC.AUDIO_MUTE,       # push = mute toggle
+           )
+ENC_MAP_BRIGHT = (KC.RGB_VAD,  # CW=RGB Bright down
+                  KC.RGB_VAI,  # CCW= RGB Bright up
+                  KC.RGB_TOG   # Push= RGB on/off
+                  )
+# Encoder 1 always adjusts volume
+# Encoder 2 alwys adjusts background RGB brightness
+encoders.map = [(ENC1_MAP_VOL, ENC_MAP_BRIGHT)]
 
 
 if __name__ == '__main__':

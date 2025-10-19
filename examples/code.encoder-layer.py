@@ -194,11 +194,11 @@ ENC_MAP_SHIFT_UP_DOWN = (KC.LSFT(KC.DOWN),  # CW=down
                          KC.LSFT(KC.UP),  # CCW= Forward through layers
                          KC.NO               # Push= Nothing
             )
-# Encoder 1 always adjusts volume.
-# Encoder 2 changes with the layer setting.
-encoders.map = [(ENC_MAP_VOL, ENC_MAP_RGB_BRIGHT),
-                (ENC_MAP_VOL, ENC_MAP_UP_DOWN),
-                (ENC_MAP_VOL, ENC_MAP_SHIFT_UP_DOWN),
+# Keep encoder 1 always adjusts volume.
+# Keep encoder 2 always adjusts layer.
+encoders.map = [(ENC_MAP_VOL, ENC_MAP_LAYER),
+                (ENC_MAP_VOL, ENC_MAP_LAYER),
+                (ENC_MAP_VOL, ENC_MAP_LAYER),
                 ]
 
 if __name__ == '__main__':
