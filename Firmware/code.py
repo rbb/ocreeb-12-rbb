@@ -1,4 +1,5 @@
 import board
+import time # Added for timing functions
 
 from kmk.kmk_keyboard import KMKKeyboard
 from kmk.keys import KC, Key
@@ -8,14 +9,20 @@ from kmk.modules.encoder import EncoderHandler
 from kmk.modules.rapidfire import RapidFire
 from kmk.modules.macros import Macros, Tap, Delay, Press, Release
 from kmk.modules.layers import Layers
+from kmk.modules.mouse_keys import MouseKeys
 from kmk.extensions.media_keys import MediaKeys
 from kmk.extensions.RGB import RGB
+from kmk.extensions import Extension # Added for custom extension
 
 print("Starting")
 
 # KEYBOARD SETUP
 keyboard = KMKKeyboard()
 encoders = EncoderHandler()
+
+# IMPORTANT: Enable KMK core debugging to ensure all key presses and macro
+# executions are logged to the serial port, helping to debug state changes.
+keyboard.debug_enable = True
 
 # MODULES
 rapid_fire_module = RapidFire()
@@ -66,9 +73,18 @@ class RGBLayers(Layers):
         rgb.on_layer_change(keyboard.active_layers[-1])
 layers = RGBLayers()
 
+mousekeys = MouseKeys(
+    max_speed = 10,
+    acc_interval = 1, # Delta ms to apply acceleration
+    move_step = 1
+)
+
 # Add all modules/extensions
-keyboard.modules = [encoders, rapid_fire_module, macros_module, layers] #, combos]
-keyboard.extensions = [rgb, MediaKeys()]
+keyboard.modules = [encoders, rapid_fire_module, macros_module, layers,
+                    mousekeys,
+                    #combos,
+                    ]
+keyboard.extensions = [rgb, MediaKeys() ]
 
 # --- LAYER CYCLING MACRO DEFINITIONS ---
 # This approach uses a Macro to calculate the next/previous layer and uses
@@ -83,7 +99,7 @@ def cycle_layer_plus(keyboard):
 
     # Use KC.TO(N) via tap_key for guaranteed layer and RGB update
     keyboard.tap_key(KC.TO(next_layer))
-    return keyboard
+    return () # Return empty tuple for macro compliance
 
 def cycle_layer_minus(keyboard):
     # Get the highest active layer index
@@ -95,11 +111,15 @@ def cycle_layer_minus(keyboard):
 
     # Use KC.TO(N) via tap_key for guaranteed layer and RGB update
     keyboard.tap_key(KC.TO(prev_layer))
-    return keyboard
+    return () # Return empty tuple for macro compliance
 
 # Instantiate the custom macro keys
 LCY_P = KC.MACRO(cycle_layer_plus)
 LCY_M = KC.MACRO(cycle_layer_minus)
+# --------------------------------------------------------
+# Define the rapid-fire key as a custom keycode
+# Sends the left arrow key every 5s after holding for 10ms
+REPEAT_LEFT = KC.RF(KC.LEFT, interval=5000, timeout=0, toggle=True)
 # --------------------------------------------------------
 
 # SWITCH MATRIX
@@ -145,16 +165,17 @@ HUE_DN = KC.RF(KC.RGB_HUD)
 keyboard.keymap = [
     # Layer 0 (Blue), Youtube
     [
-        LCY_P, TERMINAL, KC.MEDIA_PLAY_PAUSE, LOCK,
-        KC.F2, SPEED_DN, KC.AUDIO_MUTE,       SPEED_UP,
-        KC.A,  KC.LEFT,  KC.SPACE,            KC.RIGHT,
+        LCY_P,       KC.NO, KC.MEDIA_PLAY_PAUSE, LOCK,
+        KC.F2,       SPEED_DN, KC.AUDIO_MUTE,       SPEED_UP,
+        REPEAT_LEFT,  KC.LEFT,  KC.SPACE,            KC.RIGHT,
     ],
-    # Layer 1 (Green), numpad?
+    # Layer 1 (Green), numpad
     [
 
-        LCY_P, KC.N2, KC.N3, KC.N4,
-        KC.N5, KC.N6, KC.N7, KC.N8,
-        KC.B, KC.N0, KC.MINS, KC.EQL,
+        LCY_P, KC.N1, KC.N2, KC.N3,
+        KC.HOME, KC.N4, KC.N5, KC.N6,
+        KC.N0, KC.N7, KC.N8, KC.N9,
+        #KC.N0, KC.N7, KC.MINS, KC.EQL,
     ],
     # Layer 2 (Red), media
     [
@@ -194,12 +215,18 @@ ENC_MAP_SHIFT_UP_DOWN = (KC.LSFT(KC.DOWN),  # CW=down
                          KC.LSFT(KC.UP),  # CCW= Forward through layers
                          KC.NO               # Push= Nothing
             )
+ENC_MAP_SCROLL = (KC.MW_DN,          # CW=scroll down
+                  KC.MW_UP,          # CCW=scroll up
+                  KC.MB_MMB,         # Push=Middle Mouse Button
+            )
 # Encoder 1 always adjusts volume.
 # Encoder 2 changes with the layer setting.
 encoders.map = [(ENC_MAP_VOL, ENC_MAP_RGB_BRIGHT),
-                (ENC_MAP_VOL, ENC_MAP_UP_DOWN),
+                (ENC_MAP_VOL, ENC_MAP_SCROLL),
                 (ENC_MAP_VOL, ENC_MAP_SHIFT_UP_DOWN),
                 ]
 
 if __name__ == '__main__':
     keyboard.go()
+
+
