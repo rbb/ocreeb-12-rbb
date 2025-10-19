@@ -29,7 +29,8 @@ files that are not already in the Firmware/ directory) to:
 
 ## Quick Start Software Guide.
 
-1. Install the Circuit Python UF2 on the KB2040.
+1. Install the Circuit Python UF2 on the KB2040, by copying the appropriate UF2
+and libraries to the RPI-RP2 mass storage device.
 Once you have your KB2040 board, get a copy of [CircuitPython for the KB2040](https://circuitpython.org/board/adafruit_kb2040/).
 
 Optionally, if you will want to be adding libraries, download the
@@ -81,5 +82,22 @@ I will typically edit on my PC/Mac and copy the changes.
 I had to make some `code.py` changes to support syntax/command changes in the
 latest kmk library (October 2025). For the moment, I've ripped out the layers
 and changed to just a simple set of macro keys. I've added a repeat (RapidFire)
-to some of the keys. I plan to reintroduce the layers, and make a few different
-example `code.py` versions, as time permits.
+to some of the keys. I've re-implemented layers, and color coded the backlights
+to the current layer.
+
+I have not been able to get combos or sequences (inputs) to work.
+
+I've added and examples/ folder for putting in code.py examples. The older,
+single layer code.py is in there now.
+
+Some notes on the current code.py:
+- Upper left key switches between layers (sets of keymaps).
+- Encoder 1 is volume. Encoder 2 changes, depending on the layer.
+- The lock key (upper right) has only been tested with MacOs.
+
+Other Notes:
+- I'd like to figure out a way to get the macros/keys to change, depending on
+the host OS. But since this is an HID device, it only sends data, and does not
+receive data. So, it would be complicated. Maybe use the debug serial port?
+Otherwise, we'd probably have to figure out a way to add an extra USB endpoint,
+which probably means abandoning KMK?
