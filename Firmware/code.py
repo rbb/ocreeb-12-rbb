@@ -32,12 +32,10 @@ macros_module = Macros()
 #leader = Leader()
 #layers = Layers()
 
-
-
 # Modules - RGB Stuff
 # More colors at https://docs.qmk.fm/features/rgblight
 RED = 0
-ORANGE = 45
+ORANGE = 8  # 45 according to docs, but LEDS look more green/yellow
 GREEN = 85
 CYAN = 125
 BLUE = 170
@@ -52,11 +50,16 @@ class LayerRGB(RGB):
             self.set_hsv_fill(GREEN, self.sat, self.val)
         elif layer == 3:
             self.set_hsv_fill(RED, self.sat, self.val)
+        elif layer == 4:
+            self.set_hsv_fill(ORANGE, self.sat, self.val)
         else:
             self.set_hsv_fill(0, 0, 0)       # off
         # update the LEDs manually if no animation is active:
         self.show()
 
+    def print_hue(self, keyboard):
+        print(f'Hue: {self.hue}')
+        return ()
 
 rgb = LayerRGB(pixel_pin=board.D10,  # GPIO pin of the status LED, or background RGB light
         num_pixels=4,                # one if status LED, more if background RGB light
@@ -155,12 +158,36 @@ LOCK = KC.MACRO(
 SPEED_UP = KC.MACRO(Tap(KC.RABK), Tap(KC.RABK))  # Youtube change speed faster
 SPEED_DN = KC.MACRO(Tap(KC.LABK), Tap(KC.LABK))  # Youtube change speed slower
 
+# LED Lights
 SAT_UP = KC.RF(KC.RGB_SAI)
 SAT_DN = KC.RF(KC.RGB_SAD)
 RGB_UP = KC.RF(KC.RGB_VAI)
 RGB_DN = KC.RF(KC.RGB_VAD)
 HUE_UP = KC.RF(KC.RGB_HUI)
 HUE_DN = KC.RF(KC.RGB_HUD)
+HUE_PR = KC.MACRO(rgb.print_hue)
+
+
+# Renoise (application specific macros)
+# Play and Record
+REN_SS = KC.SPACE    # Start/Stop playing.
+REN_STEP = KC.ENTER  # Only play the line that the cursor is on (play step by step).
+REN_LOOP = KC.RALT   # Start playing and looping the current pattern.
+REN_START= KC.RCTL   # Start playing the song.
+REN_ED_ST= KC.RSHIFT # Start playing the song with Edit Mode enabled.
+REN_ED = KC.ESC      # Toggle Edit Mode.
+REN_BLK_ST = KC.KP_ENTER  # Activate Block Loop and start playing.
+# Instruments
+REN_OCT_DN = KC.KP_SLASH      # Decrease keyboard octave.
+REN_OCT_UP = KC.KP_ASTERISK   # Increase keyboard octave.
+REN_SLT_DN = KC.KP_MINUS      # Decrease slot selection in the Instrument Selector.
+REN_SLT_UP = KC.KP_PLUS       # Increase slot selection in the Instrument Selector.
+REN_SLT_PG_UP = KC.LALT(KC.LEFT) # Jump up a page in the Instrument Selector.
+REN_SLT_PG_DN = KC.LALT(KC.RIGHT) # Jump down a page in the Instrument Selector.
+# Other
+REN_CLEAR = KC.BSPACE   #Delete all notes and Effect Commands at the current line in the track and scroll everything beneath the current line up.
+REN_PAT_TOP = KC.HOME   # Go to start of pattern
+REN_PAT_BOT = KC.END    # Go to end of pattern
 
 # KEYMAPS
 # Notice that the first position (Index=0 in KMK terms, upper left key on the
@@ -193,12 +220,11 @@ keyboard.keymap = [
         KC.VOLD, KC.VOLU, KC.MUTE, KC.NO,
         KC.C, KC.NO, KC.NO, KC.NO,
     ],
-    # Layer 4 (Orange), media
+    # Layer 4 (Orange), Renoise Shortcuts
     [
-        #KC.MPLY, KC.MPRV, KC.MNXT, KC.MSTP,
-        LCY_P,  KC.MPRV, KC.MNXT, KC.MSTP,
-        KC.VOLD, KC.VOLU, KC.MUTE, KC.NO,
-        KC.C, KC.NO, KC.NO, KC.NO,
+        LCY_P,  KC.F1, KC.F2, KC.F3,
+        REN_PAT_TOP, REN_PAT_BOT, REN_START, REN_ED_ST,
+        REN_ED, REN_STEP, REN_SS, REN_BLK_ST,
     ],
 ]
 
@@ -218,6 +244,10 @@ ENC_MAP_VOL = (KC.AUDIO_VOL_DOWN,   # CW = vol down
             )
 ENC_MAP_RGB_BRIGHT = (KC.RGB_VAD,  # CW=RGB ocreeb-12 backlighting brightness down
                        KC.RGB_VAI,  # CCW=RGB ocreeb-12 backlighting brightness up
+                       KC.RGB_TOG   # Push= RGB on/off
+            )
+ENC_MAP_RGB_HUE = (KC.RGB_HUD,      # CW=RGB ocreeb-12 backlighting Hue down
+                       KC.RGB_HUI,  # CCW=RGB ocreeb-12 backlighting Hue up
                        KC.RGB_TOG   # Push= RGB on/off
             )
 ENC_MAP_LAYER = (LCY_M,       # CW=backward through layers
@@ -260,7 +290,7 @@ def update_encoder_mapping():
         (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG),    # Layer 1 - Cyan
         (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG),    # Layer 2 - Green
         (ENC_MAP_VOL, ENC_MAP_SHIFT_UP_DOWN), # Layer 3 - Red
-        (ENC_MAP_VOL, ENC_MAP_UP_DOWN),       # Layer 4 - Orange
+        (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG),    # Layer 4 - Orange
         ]
 
 def toggle_encoder_mode(keyboard):
@@ -282,5 +312,3 @@ update_encoder_mapping() # Initialize the Encoder mapping
 
 if __name__ == '__main__':
     keyboard.go()
-
-
