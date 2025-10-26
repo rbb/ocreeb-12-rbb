@@ -5,10 +5,10 @@ from kmk.kmk_keyboard import KMKKeyboard
 from kmk.keys import KC, Key
 from kmk.scanners import DiodeOrientation
 from kmk.modules.encoder import EncoderHandler
-#from kmk.modules.combos import Combos, Chord, Sequence
 from kmk.modules.rapidfire import RapidFire
 from kmk.modules.macros import Macros, Tap, Delay, Press, Release
 from kmk.modules.layers import Layers
+from kmk.modules.tapdance import TapDance
 from kmk.modules.mouse_keys import MouseKeys
 from kmk.extensions.media_keys import MediaKeys
 from kmk.extensions.RGB import RGB
@@ -19,6 +19,8 @@ print("Starting")
 # KEYBOARD SETUP
 keyboard = KMKKeyboard()
 encoders = EncoderHandler()
+tapdance = TapDance()
+tapdance.tap_time = 300    # milliseconds
 
 # IMPORTANT: Enable KMK core debugging to ensure all key presses and macro
 # executions are logged to the serial port, helping to debug state changes.
@@ -89,7 +91,7 @@ mousekeys = MouseKeys(
 # Add all modules/extensions
 keyboard.modules = [encoders, rapid_fire_module, macros_module, layers,
                     mousekeys,
-                    #combos,
+                    tapdance,
                     ]
 keyboard.extensions = [rgb, MediaKeys() ]
 
@@ -98,6 +100,7 @@ keyboard.extensions = [rgb, MediaKeys() ]
 # KC.TO(N) to switch, ensuring the RGB extension receives the layer change event.
 
 def cycle_layer_plus(keyboard):
+    print("Layer Plus")
     # Get the highest active layer index
     current_layer = keyboard.active_layers[-1]
     num_layers = len(keyboard.keymap)
@@ -109,6 +112,7 @@ def cycle_layer_plus(keyboard):
     return () # Return empty tuple for macro compliance
 
 def cycle_layer_minus(keyboard):
+    print("Layer minus")
     # Get the highest active layer index
     current_layer = keyboard.active_layers[-1]
     num_layers = len(keyboard.keymap)
@@ -120,9 +124,20 @@ def cycle_layer_minus(keyboard):
     keyboard.tap_key(KC.TO(prev_layer))
     return () # Return empty tuple for macro compliance
 
-# Instantiate the custom macro keys
+# Layer Macros
 LCY_P = KC.MACRO(cycle_layer_plus)
 LCY_M = KC.MACRO(cycle_layer_minus)
+RPT_LCY_P = KC.RF(LCY_P, interval=200, timeout=0, toggle=False)
+RPT_LCY_M = KC.RF(LCY_M, interval=200, timeout=0, toggle=False)
+MSG_STR = KC.MACRO("Thou hast tapped thrice !!!")
+LAYER = KC.TD(
+        # Tap once (or tap and hold for repeat) for Layer +
+        RPT_LCY_P,
+        # Tap twice (or tap twice and hold for repeat) for Layer -
+        RPT_LCY_M,
+        # Tap thrice for an easter egg
+        MSG_STR,
+        )
 # --------------------------------------------------------
 # Define the rapid-fire key as a custom keycode
 # Sends the left arrow key every 5s after holding for 10ms
@@ -196,33 +211,33 @@ REN_PAT_BOT = KC.END    # Go to end of pattern
 keyboard.keymap = [
     # Layer 0 (Blue), Youtube
     [
-        LCY_P,       KC.NO, KC.MEDIA_PLAY_PAUSE, LOCK,
+        LAYER,       KC.NO, KC.MEDIA_PLAY_PAUSE, LOCK,
         KC.F2,       SPEED_DN, KC.AUDIO_MUTE,       SPEED_UP,
         REPEAT_LEFT,  KC.LEFT,  KC.SPACE,            KC.RIGHT,
     ],
     # Layer 1 (Cyan), numpad
     [
-        LCY_P, KC.N1, KC.N2, KC.N3,
+        LAYER, KC.N1, KC.N2, KC.N3,
         KC.HOME, KC.N4, KC.N5, KC.N6,
         KC.N0, KC.N7, KC.N8, KC.N9,
         #KC.N0, KC.N7, KC.MINS, KC.EQL,
     ],
     # Layer 2 (Green), Function Keys
     [
-        LCY_P, KC.F1, KC.F2, KC.F3,
+        LAYER, KC.F1, KC.F2, KC.F3,
         KC.F10, KC.F4, KC.F5, KC.F6,
         KC.F12, KC.F7, KC.F8, KC.F9,
     ],
     # Layer 3 (Red), media
     [
         #KC.MPLY, KC.MPRV, KC.MNXT, KC.MSTP,
-        LCY_P,  KC.MPRV, KC.MNXT, KC.MSTP,
+        LAYER,  KC.MPRV, KC.MNXT, KC.MSTP,
         KC.VOLD, KC.VOLU, KC.MUTE, KC.NO,
         KC.C, KC.NO, KC.NO, KC.NO,
     ],
     # Layer 4 (Orange), Renoise Shortcuts
     [
-        LCY_P,  KC.F1, KC.F2, KC.F3,
+        LAYER,  KC.F1, KC.F2, KC.F3,
         REN_PAT_TOP, REN_PAT_BOT, REN_START, REN_ED_ST,
         REN_ED, REN_STEP, REN_SS, REN_BLK_ST,
     ],
