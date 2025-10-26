@@ -32,6 +32,8 @@ macros_module = Macros()
 #leader = Leader()
 #layers = Layers()
 
+
+
 # Modules - RGB Stuff
 # More colors at https://docs.qmk.fm/features/rgblight
 RED = 0
@@ -45,8 +47,10 @@ class LayerRGB(RGB):
         if layer == 0:
             self.set_hsv_fill(BLUE, self.sat, self.val)
         elif layer == 1:
-            self.set_hsv_fill(GREEN, self.sat, self.val)
+            self.set_hsv_fill(CYAN, self.sat, self.val)
         elif layer == 2:
+            self.set_hsv_fill(GREEN, self.sat, self.val)
+        elif layer == 3:
             self.set_hsv_fill(RED, self.sat, self.val)
         else:
             self.set_hsv_fill(0, 0, 0)       # off
@@ -169,15 +173,27 @@ keyboard.keymap = [
         KC.F2,       SPEED_DN, KC.AUDIO_MUTE,       SPEED_UP,
         REPEAT_LEFT,  KC.LEFT,  KC.SPACE,            KC.RIGHT,
     ],
-    # Layer 1 (Green), numpad
+    # Layer 1 (Cyan), numpad
     [
-
         LCY_P, KC.N1, KC.N2, KC.N3,
         KC.HOME, KC.N4, KC.N5, KC.N6,
         KC.N0, KC.N7, KC.N8, KC.N9,
         #KC.N0, KC.N7, KC.MINS, KC.EQL,
     ],
-    # Layer 2 (Red), media
+    # Layer 2 (Green), Function Keys
+    [
+        LCY_P, KC.F1, KC.F2, KC.F3,
+        KC.F10, KC.F4, KC.F5, KC.F6,
+        KC.F12, KC.F7, KC.F8, KC.F9,
+    ],
+    # Layer 3 (Red), media
+    [
+        #KC.MPLY, KC.MPRV, KC.MNXT, KC.MSTP,
+        LCY_P,  KC.MPRV, KC.MNXT, KC.MSTP,
+        KC.VOLD, KC.VOLU, KC.MUTE, KC.NO,
+        KC.C, KC.NO, KC.NO, KC.NO,
+    ],
+    # Layer 4 (Orange), media
     [
         #KC.MPLY, KC.MPRV, KC.MNXT, KC.MSTP,
         LCY_P,  KC.MPRV, KC.MNXT, KC.MSTP,
@@ -195,6 +211,7 @@ keyboard.keymap = [
 #    Chord((0, 3), KC.TO(2), timeout=200),
 #]
 
+# --- Encoders
 ENC_MAP_VOL = (KC.AUDIO_VOL_DOWN,   # CW = vol down
             KC.AUDIO_VOL_UP,     # CCW = vol up
             KC.AUDIO_MUTE,       # push = mute toggle
@@ -215,16 +232,53 @@ ENC_MAP_SHIFT_UP_DOWN = (KC.LSFT(KC.DOWN),  # CW=down
                          KC.LSFT(KC.UP),  # CCW= Forward through layers
                          KC.NO               # Push= Nothing
             )
-ENC_MAP_SCROLL = (KC.MW_DN,          # CW=scroll down
+ENC_MAP_SCROLL = (KC.MW_DOWN,          # CW=scroll down
                   KC.MW_UP,          # CCW=scroll up
                   KC.MB_MMB,         # Push=Middle Mouse Button
             )
+# Notes: We need two functions to prevent circular references.
+encoder_arrow_mode = False
+def update_encoder_mapping():
+    """Updates the encoder map"""
+    global encoder_arrow_mode
+    # Only define the encoder mapping, when toggling between arrow up/down
+    # and mouse wheel up/down.
+    if encoder_arrow_mode:
+        ENC_MAP_SCROLL_TOG = (KC.UP, KC.DOWN, TOGGLE_ENCODER_MODE)
+    else:
+        ENC_MAP_SCROLL_TOG = (KC.MW_UP, KC.MW_DOWN, TOGGLE_ENCODER_MODE)
+
+    # Rebuild the the encoder map
+    # Note: we can do something like:
+    #           encoders.map[1] = (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG)
+    #           encoders.map[2] = (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG)
+    #       which would only update the map entry of interest. But,
+    #       just updating the full map is probably more maintainable,
+    #       and easier to read.
+    encoders.map = [
+        (ENC_MAP_VOL, ENC_MAP_RGB_BRIGHT),    # Layer 0 - Blue
+        (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG),    # Layer 1 - Cyan
+        (ENC_MAP_VOL, ENC_MAP_SCROLL_TOG),    # Layer 2 - Green
+        (ENC_MAP_VOL, ENC_MAP_SHIFT_UP_DOWN), # Layer 3 - Red
+        (ENC_MAP_VOL, ENC_MAP_UP_DOWN),       # Layer 4 - Orange
+        ]
+
+def toggle_encoder_mode(keyboard):
+    """This is run when the TOGGLE_ENCODER_MODE macro is executed:
+        - Toggles encoder_arrow_mode
+        - calls the update_encoder_mapping
+        - prints debug message
+    """
+    global encoder_arrow_mode
+    encoder_arrow_mode = not encoder_arrow_mode
+    update_encoder_mapping()
+    print("Encoder mode:", "ARROWS" if encoder_arrow_mode else "SCROLL")
+    return ()
+
+TOGGLE_ENCODER_MODE = KC.MACRO(toggle_encoder_mode)
+update_encoder_mapping() # Initialize the Encoder mapping
 # Encoder 1 always adjusts volume.
 # Encoder 2 changes with the layer setting.
-encoders.map = [(ENC_MAP_VOL, ENC_MAP_RGB_BRIGHT),
-                (ENC_MAP_VOL, ENC_MAP_SCROLL),
-                (ENC_MAP_VOL, ENC_MAP_SHIFT_UP_DOWN),
-                ]
 
 if __name__ == '__main__':
     keyboard.go()
