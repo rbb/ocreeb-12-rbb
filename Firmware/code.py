@@ -253,18 +253,33 @@ keyboard.keymap = [
 #]
 
 # --- Encoders
-ENC_MAP_VOL = (KC.AUDIO_VOL_DOWN,   # CW = vol down
-            KC.AUDIO_VOL_UP,     # CCW = vol up
-            KC.AUDIO_MUTE,       # push = mute toggle
-            )
-ENC_MAP_RGB_BRIGHT = (KC.RGB_VAD,  # CW=RGB ocreeb-12 backlighting brightness down
-                       KC.RGB_VAI,  # CCW=RGB ocreeb-12 backlighting brightness up
-                       KC.RGB_TOG   # Push= RGB on/off
-            )
-ENC_MAP_RGB_HUE = (KC.RGB_HUD,      # CW=RGB ocreeb-12 backlighting Hue down
-                       KC.RGB_HUI,  # CCW=RGB ocreeb-12 backlighting Hue up
-                       KC.RGB_TOG   # Push= RGB on/off
-            )
+ENC_BACKWARDS = True
+if ENC_BACKWARDS:
+    ENC_MAP_VOL = (KC.AUDIO_VOL_UP,   # CW = vol down
+                KC.AUDIO_VOL_DOWN,     # CCW = vol up
+                KC.AUDIO_MUTE,       # push = mute toggle
+                )
+    ENC_MAP_RGB_BRIGHT = (KC.RGB_VAI,  # CW=RGB ocreeb-12 backlighting brightness down
+                           KC.RGB_VAD,  # CCW=RGB ocreeb-12 backlighting brightness up
+                           KC.RGB_TOG   # Push= RGB on/off
+                )
+    ENC_MAP_RGB_HUE = (KC.RGB_HUD,      # CW=RGB ocreeb-12 backlighting Hue down
+                           KC.RGB_HUI,  # CCW=RGB ocreeb-12 backlighting Hue up
+                           KC.RGB_TOG   # Push= RGB on/off
+                )
+else:
+    ENC_MAP_VOL = (KC.AUDIO_VOL_DOWN,   # CW = vol down
+                KC.AUDIO_VOL_UP,     # CCW = vol up
+                KC.AUDIO_MUTE,       # push = mute toggle
+                )
+    ENC_MAP_RGB_BRIGHT = (KC.RGB_VAD,  # CW=RGB ocreeb-12 backlighting brightness down
+                           KC.RGB_VAI,  # CCW=RGB ocreeb-12 backlighting brightness up
+                           KC.RGB_TOG   # Push= RGB on/off
+                )
+    ENC_MAP_RGB_HUE = (KC.RGB_HUI,      # CW=RGB ocreeb-12 backlighting Hue down
+                           KC.RGB_HUD,  # CCW=RGB ocreeb-12 backlighting Hue up
+                           KC.RGB_TOG   # Push= RGB on/off
+                )
 ENC_MAP_LAYER = (LCY_M,       # CW=backward through layers
                  LCY_P,       # CCW= Forward through layers
                  KC.NO        # Push= Nothing
